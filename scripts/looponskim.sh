@@ -12,8 +12,8 @@ cp crab_${mass}.cfg crab.cfg
 
 
 
-#rfmkdir /castor/cern.ch/user/l/lusito/SkimJanuary09/test2/${mass}
-#rfchmod 777 /castor/cern.ch/user/l/lusito/SkimJanuary09/test2/${mass}
+rfmkdir /castor/cern.ch/user/l/lusito/SkimJanuary09/test2/${mass}
+rfchmod 777 /castor/cern.ch/user/l/lusito/SkimJanuary09/test2/${mass}
 
 #cd /home/cmsprod/NewAnalysis/official/CMSSW_1_3_1_HLT6/src
 
