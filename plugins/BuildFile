@@ -1,0 +1,8 @@
+<export></export>
+<library name=TauAnalysisSkimming_plugins file=*.cc>
+  <use name=FWCore/Framework>
+  <use name=FWCore/MessageLogger>
+  <use name=FWCore/PluginManager>
+  <use name=FWCore/ParameterSet>
+  <use name=root>
+</library>
