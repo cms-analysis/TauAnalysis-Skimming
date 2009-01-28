@@ -1,0 +1,18 @@
+After changing all the parameters:
+dataset you want to use in datasetpath.txt
+
+Usual crab parameters in the crab_skim.cfg (crab template)
+Directories'names in looponskim.sh
+
+From lxplus
+
+Change shell type:
+[lxplus246] > sh
+[lxplus246] > source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh
+
+then go to the dir where you have your cfg and the files
+
+[lxplus246] > sh looponskim.sh
+
+and that's all
+

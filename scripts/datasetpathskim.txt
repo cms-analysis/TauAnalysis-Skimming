@@ -1,0 +1,13 @@
+datasetpath = /Ztautau/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath = /QCDpt30/Winter09_IDEAL_V11_FastSim_v1/GEN-SIM-DIGI-RECO
+datasetpath = /Zmumu/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath = /Zee/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath = /Wtaunu/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath =/Wmunu/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath =/Wenu/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath =/WJets-madgraph/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO	
+datasetpath =/TauolaTTbar/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath =/QCD_BCtoMu_Pt80to120/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath =/QCD_BCtoMu_Pt50to80/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath =/QCD_EMenriched_Pt20to30/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
+datasetpath =/QCD_EMenriched_Pt30to80/Summer08_IDEAL_V11_redigi_v1/GEN-SIM-RECO
