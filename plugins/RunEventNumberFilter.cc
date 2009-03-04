@@ -35,10 +35,48 @@ RunEventNumberFilter::~RunEventNumberFilter()
   edm::LogInfo ("~RunEventNumberFilter") << " Number of Events processed = " << numEventsProcessed_ << std::endl
 					 << " Number of Events selected = " << numEventsSelected_ << ","
 					 << " " << matchRemark << " Number of Events to be selected = " << numEventsToBeSelected_ << ".";
+ 
+//--- check for events specified by run + event number in ASCII file
+//    and not found in EDM input .root file
+  int numRunEventNumbersUnmatched = 0;
+  for ( std::map<edm::RunNumber_t, eventNumberMap>::const_iterator run = runEventNumbersMatched_.begin();
+	run != runEventNumbersMatched_.end(); ++run ) {
+    for ( eventNumberMap::const_iterator event = run->second.begin();
+	  event != run->second.end(); ++event ) {
+      if ( event->second < 1 ) {
+	if ( numRunEventNumbersUnmatched == 0 ) std::cout << "Events not found in PoolInputSource:" << std::endl;
+	std::cout << " Run# = " << run->first << ", Event# " << event->first << std::endl;
+	++numRunEventNumbersUnmatched;
+      }
+    }
+  }
+
+  if ( numRunEventNumbersUnmatched > 0 ) 
+    std::cout << "--> Number of unmatched Events = " << numRunEventNumbersUnmatched << std::endl;
+
+//--- check for events specified by run + event number in ASCII file
+//    and found more than once in EDM input .root file
+  int numRunEventNumbersAmbiguousMatch = 0;
+  for ( std::map<edm::RunNumber_t, eventNumberMap>::const_iterator run = runEventNumbersMatched_.begin();
+	run != runEventNumbersMatched_.end(); ++run ) {
+    for ( eventNumberMap::const_iterator event = run->second.begin();
+	  event != run->second.end(); ++event ) {
+      if ( event->second > 1 ) {
+	if ( numRunEventNumbersAmbiguousMatch == 0 ) std::cout << "Events found in PoolInputSource more than once:" << std::endl;
+	std::cout << " Run# = " << run->first << ", Event# " << event->first << std::endl;
+	++numRunEventNumbersAmbiguousMatch;
+      }
+    }
+  }
+  
+  if ( numRunEventNumbersAmbiguousMatch > 0 ) 
+    std::cout << "--> Number of ambiguously matched Events = " << numRunEventNumbersAmbiguousMatch << std::endl;
 }
 
 void RunEventNumberFilter::readRunEventNumberFile()
 {
+//--- read run + event number pairs from ASCII file
+
   TPRegexp regexpParser_line("[[:digit:]]+[[:space:]]+[[:digit:]]+");
   TPRegexp regexpParser_number("([[:digit:]]+)[[:space:]]+([[:digit:]]+)");
 
@@ -58,7 +96,6 @@ void RunEventNumberFilter::readRunEventNumberFile()
     TString line_tstring = line.data();
 //--- check if line matches two columns of numbers format
     if ( regexpParser_line.Match(line_tstring) == 1 ) {
-      //std::cout << "line = '" << line << "'" << std::endl;
 
 //--- match individual run and event numbers;
 //    require three matches (first match refers to entire line)
@@ -70,8 +107,9 @@ void RunEventNumberFilter::readRunEventNumberFile()
 	//std::cout << ((TObjString*)subStrings->At(2))->GetString() << std::endl;
 	edm::EventNumber_t eventNumber = ((TObjString*)subStrings->At(2))->GetString().Atoll();
 
-	std::cout << "--> adding run# = " << runNumber << ", event# " << eventNumber << std::endl;
+	//std::cout << "--> adding Run# = " << runNumber << ", Event# " << eventNumber << std::endl;
 	runEventNumbers_[runNumber].insert(eventNumber);
+	runEventNumbersMatched_[runNumber][eventNumber] = 0;
 	
 	++numEventsToBeSelected_;
       } else {
@@ -119,7 +157,8 @@ bool RunEventNumberFilter::filter(edm::Event& evt, const edm::EventSetup& es)
 
   ++numEventsProcessed_;
   if ( isSelected ) {
-    std::cout << " selected Run# " << runNumber << ", Event# " << eventNumber << "." << std::endl;
+    edm::LogInfo ("filter") << "copying Run# " << runNumber << ", Event# " << eventNumber << ".";
+    ++runEventNumbersMatched_[runNumber][eventNumber];
     ++numEventsSelected_;
     return true;
   } else {

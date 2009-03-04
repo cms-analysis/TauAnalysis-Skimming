@@ -10,7 +10,7 @@
  *
  * \version $Revision: 1.1 $
  *
- * $Id: EventCountAnalyzer.h,v 1.1 2009/01/28 15:59:22 veelken Exp $
+ * $Id: RunEventNumberFilter.h,v 1.1 2009/03/04 10:05:37 veelken Exp $
  *
  */
 
@@ -40,6 +40,9 @@ class RunEventNumberFilter : public edm::EDFilter
   std::string runEventNumberFileName_;
   typedef std::set<edm::EventNumber_t> eventNumberSet;
   std::map<edm::RunNumber_t, eventNumberSet> runEventNumbers_;
+  
+  typedef std::map<edm::EventNumber_t, int> eventNumberMap;
+  std::map<edm::RunNumber_t, eventNumberMap> runEventNumbersMatched_;
 
   int cfgError_;
 
