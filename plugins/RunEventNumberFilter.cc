@@ -39,14 +39,18 @@ RunEventNumberFilter::~RunEventNumberFilter()
 //--- check for events specified by run + event number in ASCII file
 //    and not found in EDM input .root file
   int numRunEventNumbersUnmatched = 0;
-  for ( std::map<edm::RunNumber_t, eventNumberMap>::const_iterator run = runEventNumbersMatched_.begin();
-	run != runEventNumbersMatched_.end(); ++run ) {
-    for ( eventNumberMap::const_iterator event = run->second.begin();
+  for ( std::map<edm::RunNumber_t, matchedEventLumiSectionNumberMap>::const_iterator run = matchedRunEventLumiSectionNumbers_.begin();
+	run != matchedRunEventLumiSectionNumbers_.end(); ++run ) {
+    for ( matchedEventLumiSectionNumberMap::const_iterator event = run->second.begin();
 	  event != run->second.end(); ++event ) {
-      if ( event->second < 1 ) {
-	if ( numRunEventNumbersUnmatched == 0 ) std::cout << "Events not found in PoolInputSource:" << std::endl;
-	std::cout << " Run# = " << run->first << ", Event# " << event->first << std::endl;
-	++numRunEventNumbersUnmatched;
+      for ( matchedLumiSectionNumbersMap::const_iterator lumiSection = event->second.begin();
+	    lumiSection != event->second.end(); ++lumiSection ) {
+	if ( lumiSection->second < 1 ) {
+	  if ( numRunEventNumbersUnmatched == 0 ) std::cout << "Events not found in PoolInputSource:" << std::endl;
+	  std::cout << " Run# = " << run->first << "," 
+		    << " Event# " << event->first << ", Luminosity Section# " << lumiSection->first << std::endl;
+	  ++numRunEventNumbersUnmatched;
+	}
       }
     }
   }
@@ -57,14 +61,18 @@ RunEventNumberFilter::~RunEventNumberFilter()
 //--- check for events specified by run + event number in ASCII file
 //    and found more than once in EDM input .root file
   int numRunEventNumbersAmbiguousMatch = 0;
-  for ( std::map<edm::RunNumber_t, eventNumberMap>::const_iterator run = runEventNumbersMatched_.begin();
-	run != runEventNumbersMatched_.end(); ++run ) {
-    for ( eventNumberMap::const_iterator event = run->second.begin();
+  for ( std::map<edm::RunNumber_t, matchedEventLumiSectionNumberMap>::const_iterator run = matchedRunEventLumiSectionNumbers_.begin();
+	run != matchedRunEventLumiSectionNumbers_.end(); ++run ) {
+    for ( matchedEventLumiSectionNumberMap::const_iterator event = run->second.begin();
 	  event != run->second.end(); ++event ) {
-      if ( event->second > 1 ) {
-	if ( numRunEventNumbersAmbiguousMatch == 0 ) std::cout << "Events found in PoolInputSource more than once:" << std::endl;
-	std::cout << " Run# = " << run->first << ", Event# " << event->first << std::endl;
-	++numRunEventNumbersAmbiguousMatch;
+      for ( matchedLumiSectionNumbersMap::const_iterator lumiSection = event->second.begin();
+	    lumiSection != event->second.end(); ++lumiSection ) {
+	if ( lumiSection->second > 1 ) {
+	  if ( numRunEventNumbersAmbiguousMatch == 0 ) std::cout << "Events found in PoolInputSource more than once:" << std::endl;
+	  std::cout << " Run# = " << run->first << "," 
+		    << " Event# " << event->first << ", Luminosity Section# " << lumiSection->first << std::endl;
+	  ++numRunEventNumbersAmbiguousMatch;
+	}
       }
     }
   }
@@ -77,8 +85,8 @@ void RunEventNumberFilter::readRunEventNumberFile()
 {
 //--- read run + event number pairs from ASCII file
 
-  TPRegexp regexpParser_line("[[:digit:]]+[[:space:]]+[[:digit:]]+");
-  TPRegexp regexpParser_number("([[:digit:]]+)[[:space:]]+([[:digit:]]+)");
+  TPRegexp regexpParser_line("[[:digit:]]+[[:space:]]+[[:digit:]]+[[:space:]]+[[:digit:]]+");
+  TPRegexp regexpParser_number("([[:digit:]]+)[[:space:]]+([[:digit:]]+)[[:space:]]+([[:digit:]]+)");
 
   ifstream runEventNumberFile(runEventNumberFileName_.data());
   int iLine = 0;
@@ -97,20 +105,24 @@ void RunEventNumberFilter::readRunEventNumberFile()
 //--- check if line matches two columns of numbers format
     if ( regexpParser_line.Match(line_tstring) == 1 ) {
 
-//--- match individual run and event numbers;
-//    require three matches (first match refers to entire line)
+//--- match individual run, event and luminosity section numbers;
+//    require four matches (first match refers to entire line)
       TObjArray* subStrings = regexpParser_number.MatchS(line_tstring);
       int numSubStrings = subStrings->GetEntries();
-      if ( numSubStrings == 3 ) {
+      if ( numSubStrings == 4 ) {
 	//std::cout << ((TObjString*)subStrings->At(1))->GetString() << std::endl;
 	edm::RunNumber_t runNumber = ((TObjString*)subStrings->At(1))->GetString().Atoll();
 	//std::cout << ((TObjString*)subStrings->At(2))->GetString() << std::endl;
 	edm::EventNumber_t eventNumber = ((TObjString*)subStrings->At(2))->GetString().Atoll();
+	//std::cout << ((TObjString*)subStrings->At(3))->GetString() << std::endl;
+	edm::LuminosityBlockNumber_t lumiSectionNumber = ((TObjString*)subStrings->At(3))->GetString().Atoll();
 
-	//std::cout << "--> adding Run# = " << runNumber << ", Event# " << eventNumber << std::endl;
-	runEventNumbers_[runNumber].insert(eventNumber);
-	runEventNumbersMatched_[runNumber][eventNumber] = 0;
-	
+	std::cout << "--> adding Run# = " << runNumber << "," 
+		  << " Event# " << eventNumber << "," 
+		  << " Luminosity Section# " << lumiSectionNumber << std::endl;
+
+	runEventLumiSectionNumbers_[runNumber][eventNumber].insert(lumiSectionNumber);
+	matchedRunEventLumiSectionNumbers_[runNumber][eventNumber][lumiSectionNumber] = 0;
 	++numEventsToBeSelected_;
       } else {
 	parseError = true;
@@ -146,19 +158,25 @@ bool RunEventNumberFilter::filter(edm::Event& evt, const edm::EventSetup& es)
 //--- retrieve run and event numbers from the event
   edm::RunNumber_t runNumber = evt.id().run();
   edm::EventNumber_t eventNumber = evt.id().event();
+  edm::LuminosityBlockNumber_t lumiSectionNumber = evt.luminosityBlock();
 
 //--- check if run number matches any of the runs containing events to be selected
   bool isSelected = false;
-  if ( runEventNumbers_.find(runNumber) != runEventNumbers_.end() ) {
-    const eventNumberSet& eventNumbers = runEventNumbers_[runNumber];
+  if ( runEventLumiSectionNumbers_.find(runNumber) != runEventLumiSectionNumbers_.end() ) {
+    const eventLumiSectionNumberMap& eventLumiSectionNumbers = runEventLumiSectionNumbers_.find(runNumber)->second;
 
-    if ( eventNumbers.find(eventNumber) != eventNumbers.end() ) isSelected = true;
+    if ( eventLumiSectionNumbers.find(eventNumber) != eventLumiSectionNumbers.end() ) {
+      const lumiSectionNumberSet& lumiSectionNumbers = eventLumiSectionNumbers.find(eventNumber)->second;
+
+      if ( lumiSectionNumbers.find(lumiSectionNumber) != lumiSectionNumbers.end() ) isSelected = true;
+    }
   }
 
   ++numEventsProcessed_;
   if ( isSelected ) {
-    edm::LogInfo ("filter") << "copying Run# " << runNumber << ", Event# " << eventNumber << ".";
-    ++runEventNumbersMatched_[runNumber][eventNumber];
+    edm::LogInfo ("filter") << "copying Run# " << runNumber << "," 
+			    << " Event# " << eventNumber << ", Luminosity Section# " << lumiSectionNumber << ".";
+    ++matchedRunEventLumiSectionNumbers_[runNumber][eventNumber][lumiSectionNumber];
     ++numEventsSelected_;
     return true;
   } else {

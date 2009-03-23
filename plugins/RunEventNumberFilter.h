@@ -8,9 +8,9 @@
  * 
  * \author Christian Veelken, UC Davis
  *
- * \version $Revision: 1.1 $
+ * \version $Revision: 1.2 $
  *
- * $Id: RunEventNumberFilter.h,v 1.1 2009/03/04 10:05:37 veelken Exp $
+ * $Id: RunEventNumberFilter.h,v 1.2 2009/03/04 12:15:03 veelken Exp $
  *
  */
 
@@ -38,11 +38,14 @@ class RunEventNumberFilter : public edm::EDFilter
   void readRunEventNumberFile();
   
   std::string runEventNumberFileName_;
-  typedef std::set<edm::EventNumber_t> eventNumberSet;
-  std::map<edm::RunNumber_t, eventNumberSet> runEventNumbers_;
+
+  typedef std::set<edm::LuminosityBlockNumber_t> lumiSectionNumberSet;
+  typedef std::map<edm::EventNumber_t, lumiSectionNumberSet> eventLumiSectionNumberMap;
+  std::map<edm::RunNumber_t, eventLumiSectionNumberMap> runEventLumiSectionNumbers_;
   
-  typedef std::map<edm::EventNumber_t, int> eventNumberMap;
-  std::map<edm::RunNumber_t, eventNumberMap> runEventNumbersMatched_;
+  typedef std::map<edm::LuminosityBlockNumber_t, int> matchedLumiSectionNumbersMap;
+  typedef std::map<edm::EventNumber_t, matchedLumiSectionNumbersMap> matchedEventLumiSectionNumberMap;
+  std::map<edm::RunNumber_t, matchedEventLumiSectionNumberMap> matchedRunEventLumiSectionNumbers_;
 
   int cfgError_;
 
