@@ -16,6 +16,8 @@ MultiBoolEventSelFlagFilter::MultiBoolEventSelFlagFilter(const edm::ParameterSet
 {
   //std::cout << "<MultiBoolEventSelFlagFilter::MultiBoolEventSelFlagFilter>:" << std::endl;
 
+  cfgError_ = 0;
+
   flags_ = cfg.getParameter<vInputTag>("flags");
   if ( !flags_.size() >= 1 ) {
     edm::LogError ("MultiBoolEventSelFlagFilter") << " List of BoolEventSelFlags must not be empty !!";
