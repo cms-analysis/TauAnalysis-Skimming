@@ -1,4 +1,4 @@
-#include "TauAnalysis/Skimming/plugins/MultiBoolEventSelFlagFilter.h"
+#include "TauAnalysis/Skimming/plugins/MultiBoolEventSelFlagSelector.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
@@ -12,29 +12,29 @@
 
 const int noMatchRequired = -1;
 
-MultiBoolEventSelFlagFilter::MultiBoolEventSelFlagFilter(const edm::ParameterSet& cfg)
+MultiBoolEventSelFlagSelector::MultiBoolEventSelFlagSelector(const edm::ParameterSet& cfg)
 {
-  //std::cout << "<MultiBoolEventSelFlagFilter::MultiBoolEventSelFlagFilter>:" << std::endl;
+  //std::cout << "<MultiBoolEventSelFlagSelector::MultiBoolEventSelFlagSelector>:" << std::endl;
 
   cfgError_ = 0;
 
   flags_ = cfg.getParameter<vInputTag>("flags");
   if ( !flags_.size() >= 1 ) {
-    edm::LogError ("MultiBoolEventSelFlagFilter") << " List of BoolEventSelFlags must not be empty !!";
+    edm::LogError ("MultiBoolEventSelFlagSelector") << " List of BoolEventSelFlags must not be empty !!";
     cfgError_ = 1;
   }
 }
 
-MultiBoolEventSelFlagFilter::~MultiBoolEventSelFlagFilter()
+MultiBoolEventSelFlagSelector::~MultiBoolEventSelFlagSelector()
 {
 //--- nothing to be done yet...
 }
 
-bool MultiBoolEventSelFlagFilter::filter(edm::Event& evt, const edm::EventSetup& es)
+bool MultiBoolEventSelFlagSelector::operator()(edm::Event& evt, const edm::EventSetup& es)
 {
 //--- check that configuration parameters contain no errors
   if ( cfgError_ ) {
-    edm::LogError ("filter") << " Error in Configuration ParameterSet --> skipping !!";
+    edm::LogError ("operator()") << " Error in Configuration ParameterSet --> skipping !!";
     return false;
   }
 
@@ -56,5 +56,10 @@ bool MultiBoolEventSelFlagFilter::filter(edm::Event& evt, const edm::EventSetup&
 
 #include "FWCore/Framework/interface/MakerMacros.h"
 
-DEFINE_FWK_MODULE(MultiBoolEventSelFlagFilter);
+DEFINE_EDM_PLUGIN(EventSelectorPluginFactory, MultiBoolEventSelFlagSelector, "MultiBoolEventSelFlagSelector");
 
+#include "PhysicsTools/UtilAlgos/interface/EventSelectorAdapter.h"
+
+typedef EventSelectorAdapter<MultiBoolEventSelFlagSelector> MultiBoolEventSelFlagFilter;
+
+DEFINE_ANOTHER_FWK_MODULE(MultiBoolEventSelFlagFilter);
