@@ -108,12 +108,11 @@ void RunEventNumberFilter::readRunEventNumberFile()
 
     TString line_tstring = line.data();
 //--- check if line matches three column format;
-//    in which case require three matches (first match refers to entire line)
+//    in which case require four matches (first match refers to entire line)
 //    and match individually run, event and luminosity section numbers
     if ( regexpParser_threeColumnLine.Match(line_tstring) == 1 ) {
       TObjArray* subStrings = regexpParser_threeColumnNumber.MatchS(line_tstring);
-      int numSubStrings = subStrings->GetEntries();
-      if ( numSubStrings == 4 ) {
+      if ( subStrings->GetEntries() == 4 ) {
 	edm::RunNumber_t runNumber = ((TObjString*)subStrings->At(1))->GetString().Atoll();
 	edm::EventNumber_t eventNumber = ((TObjString*)subStrings->At(2))->GetString().Atoll();
 	edm::LuminosityBlockNumber_t lumiSectionNumber = ((TObjString*)subStrings->At(3))->GetString().Atoll();
@@ -135,8 +134,7 @@ void RunEventNumberFilter::readRunEventNumberFile()
 //    and match individually run and event numbers 
 //    (set lumiSectionNumber to -1 to indicate that to match for luminosity section numbers is required)
       TObjArray* subStrings = regexpParser_twoColumnNumber.MatchS(line_tstring);
-      int numSubStrings = subStrings->GetEntries();
-      if ( numSubStrings == 3 ) {
+      if ( subStrings->GetEntries() == 3 ) {
 	edm::RunNumber_t runNumber = ((TObjString*)subStrings->At(1))->GetString().Atoll();
 	edm::EventNumber_t eventNumber = ((TObjString*)subStrings->At(2))->GetString().Atoll();
 
