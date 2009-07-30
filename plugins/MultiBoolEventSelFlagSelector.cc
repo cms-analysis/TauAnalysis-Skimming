@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 const int noMatchRequired = -1;
 
@@ -18,8 +19,8 @@ MultiBoolEventSelFlagSelector::MultiBoolEventSelFlagSelector(const edm::Paramete
 
   cfgError_ = 0;
 
-  flags_ = cfg.getParameter<vInputTag>("flags");
-  if ( !flags_.size() >= 1 ) {
+  evtSelFlags_ = cfg.getParameter<vInputTag>("flags");
+  if ( !evtSelFlags_.size() >= 1 ) {
     edm::LogError ("MultiBoolEventSelFlagSelector") << " List of BoolEventSelFlags must not be empty !!";
     cfgError_ = 1;
   }
@@ -27,7 +28,12 @@ MultiBoolEventSelFlagSelector::MultiBoolEventSelFlagSelector(const edm::Paramete
 
 MultiBoolEventSelFlagSelector::~MultiBoolEventSelFlagSelector()
 {
-//--- nothing to be done yet...
+  std::cout << "<MultiBoolEventSelFlagSelector::~MultiBoolEventSelFlagSelector>:" << std::endl;
+  std::cout << "Filter Statistics:" << std::endl;
+  for ( std::map<std::string, long>::const_iterator evtSelStat = evtSelStatistics_.begin();
+	evtSelStat != evtSelStatistics_.end(); ++evtSelStat ) {
+    std::cout << " " << std::setw(20) << evtSelStat->first << ": " << evtSelStat->second << std::endl;
+  }
 }
 
 bool MultiBoolEventSelFlagSelector::operator()(edm::Event& evt, const edm::EventSetup& es)
@@ -41,10 +47,12 @@ bool MultiBoolEventSelFlagSelector::operator()(edm::Event& evt, const edm::Event
 //--- check values of boolean flags;
 //    return true only if **all** flags evaluate to true,
 //    otherwise return false
-  for ( vInputTag::const_iterator flag = flags_.begin();
-	flag != flags_.end(); ++flag ) {
+  for ( vInputTag::const_iterator evtSelFlag = evtSelFlags_.begin();
+	evtSelFlag != evtSelFlags_.end(); ++evtSelFlag ) {
     edm::Handle<bool> value;
-    evt.getByLabel(*flag, value);
+    evt.getByLabel(*evtSelFlag, value);
+
+    ++evtSelStatistics_[evtSelFlag->label()];
 
 //--- return immediately once one flag evaluates to false
     if ( (*value) == false ) return false;

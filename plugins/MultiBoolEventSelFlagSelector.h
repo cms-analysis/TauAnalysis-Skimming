@@ -10,7 +10,7 @@
  *
  * \version $Revision: 1.1 $
  *
- * $Id: MultiBoolEventSelFlagSelector.h,v 1.1 2009/05/08 08:40:33 veelken Exp $
+ * $Id: MultiBoolEventSelFlagSelector.h,v 1.1 2009/06/09 13:30:20 veelken Exp $
  *
  */
 
@@ -39,7 +39,9 @@ class MultiBoolEventSelFlagSelector : public EventSelectorBase
  private:
 //--- names of boolean flags to be evaluated
   typedef std::vector<edm::InputTag> vInputTag;
-  vInputTag flags_;
+  vInputTag evtSelFlags_;
+
+  std::map<std::string, long> evtSelStatistics_;
 
   int cfgError_;
 };
