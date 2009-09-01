@@ -30,9 +30,9 @@ MultiBoolEventSelFlagSelector::~MultiBoolEventSelFlagSelector()
 {
   std::cout << "<MultiBoolEventSelFlagSelector::~MultiBoolEventSelFlagSelector>:" << std::endl;
   std::cout << "Filter Statistics:" << std::endl;
-  for ( std::map<std::string, long>::const_iterator evtSelStat = evtSelStatistics_.begin();
-	evtSelStat != evtSelStatistics_.end(); ++evtSelStat ) {
-    std::cout << " " << std::setw(20) << evtSelStat->first << ": " << evtSelStat->second << std::endl;
+  for ( vInputTag::const_iterator evtSelFlag = evtSelFlags_.begin();
+	evtSelFlag != evtSelFlags_.end(); ++evtSelFlag ) {
+    std::cout << " " << std::setw(20) << evtSelFlag->label() << ": " << evtSelStatistics_[evtSelFlag->label()] << std::endl;
   }
 }
 
@@ -52,10 +52,10 @@ bool MultiBoolEventSelFlagSelector::operator()(edm::Event& evt, const edm::Event
     edm::Handle<bool> value;
     evt.getByLabel(*evtSelFlag, value);
 
-    ++evtSelStatistics_[evtSelFlag->label()];
-
 //--- return immediately once one flag evaluates to false
     if ( (*value) == false ) return false;
+
+    ++evtSelStatistics_[evtSelFlag->label()];
   }
 
 //--- all flags evaluate to true
