@@ -53,8 +53,6 @@ def makeReplacementsSkimByRunEventNumbers(channel = None, sample = None, replace
     replaceStatements = replacements.split(";")
 
     replaceStatements_retVal = []
-
-    factorization = None
     
     for replaceStatement in replaceStatements:
 
@@ -71,20 +69,18 @@ def makeReplacementsSkimByRunEventNumbers(channel = None, sample = None, replace
 
         if paramName == "maxEvents":
             replaceStatements_retVal.append(replaceStatement)
+        if paramName == "recoSampleDefinitionsFileName":
+            replaceStatements_retVal.append(replaceStatement)    
         if paramName == "runEventNumberFileName":
             replaceStatements_retVal.append(replaceStatement)
 
     # replace inputFileName parameter
-    inputFileNames = "fileNames" + sample
+    inputFileNames = "fileNames" + channel + "_" + sample
     replaceStatements_retVal.append("inputFileNames = " + inputFileNames)
 
     # replace outputFileName parameter
     outputFileName = "selEvents_" + channel + "_" + sample + ".root"
     replaceStatements_retVal.append("outputFileName = " + outputFileName)
-
-    # replace recoSampleDefinitionsFileName parameter
-    recoSampleDefinitionsFileName = "recoSampleDefinitions" + channel + "_cfi"
-    replaceStatements_retVal.append("recoSampleDefinitionsFileName = " + recoSampleDefinitionsFileName)
     
     replacements_retVal = "; ".join(replaceStatements_retVal)
 
