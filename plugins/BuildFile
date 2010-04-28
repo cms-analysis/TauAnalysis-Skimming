@@ -6,7 +6,7 @@
   <use name=FWCore/ParameterSet>
   <use name=DataFormats/Common>
   <use name=DataFormats/METReco>
-  <use name=PhysicsTools/UtilAlgos>
+  <use name=CommonTools/Utils>
   <use name=CommonTools/UtilAlgos>
   <use name=DataFormats/HepMCCandidate>
   <use name=TauAnalysis/Skimming>
