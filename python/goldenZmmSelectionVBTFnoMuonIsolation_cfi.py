@@ -108,12 +108,13 @@ import HLTrigger.HLTfilters.hltHighLevel_cfi
 zmmHLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone()
 zmmHLTFilter.TriggerResultsTag = cms.InputTag("TriggerResults", "", "HLT")
 zmmHLTFilter.HLTPaths = [
-    # double muon triggers (2012 Run A+B+C)
+    # double muon triggers (2012 Run A+B+C+D)
     'HLT_Mu17_Mu8_v16',
     'HLT_Mu17_Mu8_v17',
     'HLT_Mu17_Mu8_v18',
     'HLT_Mu17_Mu8_v19',
     'HLT_Mu17_Mu8_v21',
+    'HLT_Mu17_Mu8_v22',
     # double muon triggers (Summer'12 MC, produced with CMSSW_5_3_x)
     'HLT_Mu17_Mu8_v13'
 ]
@@ -130,10 +131,10 @@ goodVertex = cms.EDFilter("VertexSelector",
 goodMuons = cms.EDFilter("PATMuonSelector",
   src = cms.InputTag("patMuonsForGoldenZmmSelection"),
     cut = cms.string(
-      'pt > 20 & abs(eta) < 2.5 & isGlobalMuon' \
-     + ' & innerTrack.hitPattern.numberOfValidTrackerHits > 9 & innerTrack.hitPattern.numberOfValidPixelHits > 0' \
-     + ' & abs(dB) < 0.2 & globalTrack.normalizedChi2 < 10' \
-     + ' & globalTrack.hitPattern.numberOfValidMuonHits > 0 & numberOfMatches > 1' 
+      'pt > 20 && abs(eta) < 2.5 && isGlobalMuon && isPFMuon'
+      ' && track.hitPattern.trackerLayersWithMeasurement > 5 & innerTrack.hitPattern.numberOfValidPixelHits > 0'
+      ' && abs(dB) < 0.2 && globalTrack.normalizedChi2 < 10'
+      ' && globalTrack.hitPattern.numberOfValidMuonHits > 0 && numberOfMatchedStations > 1'
     ),
     filter = cms.bool(True)
 )

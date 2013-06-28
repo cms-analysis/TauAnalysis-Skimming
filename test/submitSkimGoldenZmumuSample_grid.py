@@ -8,23 +8,34 @@ import os
 import subprocess
 
 configFile = 'skimGoldenZmumu_cfg.py'
-jobId = '2012Sep21'
+jobId = '2013Feb14'
 
-##outputFilePath = 'CMSSW_5_3_x/skims/GoldenZmumu/%s/' % jobId
-outputFilePath = ''
+outputFilePath = 'CMSSW_5_3_x/skims/GoldenZmumu/%s/' % jobId
+##outputFilePath = ''
 
 samplesToAnalyze = [
     #'Data_runs190456to193621',
     #'Data_runs193834to196531',
     #'Data_runs190782to190949_recover',
-    'Data_runs197770to198913',
+    #'Data_runs198022to198523',
     #'Data_runs198934to202016',
+    #'Data_runs202044to203002',
+    #'Data_runs203894to208686',
+    'Data_runs190456to193621_ReReco',
+    'Data_runs193833to196531_ReReco',
+    'Data_runs198022to203742_ReReco',
+    'Data_runs203777to208686_ReReco'
     #'ZplusJets_madgraph',
+    #'Zmumu_pythia',
+    #'Zmumu_powheg',
     #'TTplusJets_madgraph',
+    #'Tbar_tW',
+    #'T_tW',
     #'PPmuXptGt20Mu15',
     #'WW',
     #'WZ',
-    #'ZZ'    
+    #'ZZ',
+    #'WplusJets_madgraph'
 ]
 
 # Define what output file name a skimmed sample will have
@@ -43,6 +54,10 @@ def customizeConfigFile(sampleName, cfgFileName_original, cfgFileName_modified =
     if recoSampleDefinitionsGoldenZmumu_7TeV['RECO_SAMPLES'][sampleName]['type'] != 'Data':
         isMC = "True"
     cfg_modified = cfg_modified.replace("#isMC#", isMC)
+    custom_globaltag = "None"
+    if 'conditions' in recoSampleDefinitionsGoldenZmumu_7TeV['RECO_SAMPLES'][sampleName]:
+        custom_globaltag = recoSampleDefinitionsGoldenZmumu_7TeV['RECO_SAMPLES'][sampleName]['conditions']
+    cfg_modified = cfg_modified.replace("#custom_globaltag#", "'%s'" % custom_globaltag)
 
     if cfgFileName_modified is None:
         cfgFileName_modified = cfgFileName_original.replace("_cfg.py", "_customized_%s_cfg.py" % sampleName)

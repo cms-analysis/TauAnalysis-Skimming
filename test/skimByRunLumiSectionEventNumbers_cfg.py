@@ -6,14 +6,15 @@ import re
 
 process = cms.Process("skimByRunLumiSectionEventNumbers2")
 
+# import of standard configurations for RECOnstruction
+# of electrons, muons and tau-jets with non-standard isolation cones
 process.load('Configuration/StandardSequences/Services_cff')
 process.load('FWCore/MessageService/MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
-#process.MessageLogger.cerr.threshold = cms.untracked.string('INFO')
-process.load('Configuration/StandardSequences/GeometryIdeal_cff')
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.load('Configuration/Geometry/GeometryIdeal_cff')
 process.load('Configuration/StandardSequences/MagneticField_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = cms.string('START52_V9B::All')
+process.GlobalTag.globaltag = cms.string('START53_V11::All')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(25000)
@@ -22,39 +23,42 @@ process.maxEvents = cms.untracked.PSet(
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
 ##        'rfio:/castor/cern.ch/user/v/veelken/CMSSW_5_2_x/skims/GoldenZmumu/2012Apr12/goldenZmumuEvents_ZplusJets_madgraph2_2012Apr12_AOD_183_2_KFf.root'
-        'file:/data1/veelken/CMSSW_5_2_x/skims/simWprimeToTauNu_ptGt500_AOD_3_1_rZI.root'                                
+##        'file:/data1/veelken/CMSSW_5_3_x/skims/smearcheckPat.root'
+        'file:/data1/veelken/CMSSW_5_3_x/skims/QCD_Pt-470to600_MuEnrichedPt5_TuneZ2star_8TeV_pythia6_AOD.root'
+    ),
+    dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
+    inputCommands = cms.untracked.vstring(
+        'keep *',
+        'drop recoPFTaus_*_*_*'                      
     )
 )
 
-# Get all the skim files from the castor directory
-## import TauAnalysis.Configuration.tools.castor as castor
-## inputFilePath = '/castor/cern.ch/user/v/veelken/CMSSW_5_2_x/skims/TauIdEffMeas/2012May12/'
-## inputFileNames = []
-## if inputFilePath.find('/castor/') != -1:
-##     inputFileNames = [ 'rfio:%s' % file_info['path'] for file_info in castor.nslsl(inputFilePath) ]
-## else:
-##     inputFileNames = [ 'file:%s' % os.path.join(inputFilePath, file_name) for file_name in os.listdir(inputFilePath) ]
-##
-## sample = 'WplusJets_madgraph'
-## jobId = '2012May12'
-##
-## print "inputFileNames = %s" % inputFileNames
-##
-## inputFileNames_matched = []
-## inputFile_regex = \
-##   r"[a-zA-Z0-9_/:.]*tauIdEffSample_%s_%s_AOD_(?P<gridJob>\d*)(_(?P<gridTry>\d*))*_(?P<hash>[a-zA-Z0-9]*).root" % (sample, jobId)
-## for inputFileName in inputFileNames:
-##     inputFile_matcher = re.compile(inputFile_regex)
-##     if inputFile_matcher.match(inputFileName):
-## 	inputFileNames_matched.append(inputFileName)
-##
-## print "inputFileNames_matched = %s" % inputFileNames_matched
-##
-##setattr(process.source, "fileNames", cms.untracked.vstring(inputFileNames_matched))
+#--------------------------------------------------------------------------------
+# set input files
+##inputFilePath = '/store/user/fromeo/SIG/ZprimeSSMToTauTau_M2500_TuneZ2star_8TeVpythia6tauola_Summer12_DR53XPU_S10_START53_V7Av1_AODSIM/'
+##inputFilePath = '/data2/veelken/CMSSW_5_3_x/PATtuples/TauEnReconstruction/ZprimeSSMToTauTau_M2500_TuneZ2star_8TeVpythia6tauola_Summer12_DR53XPU_S10_START53_V7Av1_AODSIM/'
+##inputFile_regex = r"[a-zA-Z0-9_/:.]*[A-Z0-9-]+.root"
+inputFilePath = '/data1/veelken/CMSSW_5_3_x/skims/simZprime2500toTauTau_RECO/'
+inputFile_regex = r"[a-zA-Z0-9_/:.]*[A-Z0-9-]+.root"
 
-##process.options = cms.untracked.PSet(
-##    emptyRunLumiMode = cms.untracked.string('doNotHandleEmptyRunsAndLumis')
-##)
+# check if name of inputFile matches regular expression
+inputFileNames = []
+files = None
+if inputFilePath.startswith('/castor/'):
+    files = [ "".join([ "rfio:", file_info['path'] ]) for file_info in castor.nslsl(inputFilePath) ]
+elif inputFilePath.startswith('/store/'):
+    files = [ "".join([ "root://eoscms.cern.ch//eos/cms", file_info['path'] ]) for file_info in eos.lsl(inputFilePath) ]    
+else:
+    files = [ "".join([ "file:", inputFilePath, file ]) for file in os.listdir(inputFilePath) ]
+for file in files:
+    #print "file = %s" % file
+    inputFile_matcher = re.compile(inputFile_regex)
+    if inputFile_matcher.match(file):
+        inputFileNames.append(file)
+print "inputFileNames = %s" % inputFileNames 
+
+process.source.fileNames = cms.untracked.vstring(inputFileNames)
+#--------------------------------------------------------------------------------
 
 process.selectEventsByRunLumiSectionEventNumber = cms.EDFilter("RunLumiSectionEventNumberFilter",
     runLumiSectionEventNumberFileName = cms.string(
@@ -62,7 +66,9 @@ process.selectEventsByRunLumiSectionEventNumber = cms.EDFilter("RunLumiSectionEv
         ##'debug_C1f.txt'
         ##'/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/TauAnalysis/Test/test/debugMEtSys_selEvents.txt'
         ##'/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/TauAnalysis/Test/test/runPATTauDEBUGGERforSimon_selEvents.txt'
-        '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_2_3_patch3/src/TauAnalysis/Test/test/runPATTauDEBUGGERforSimon_selEvents_discrAgainstMuonsFailed.txt'                                                           
+        ##'/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_3_3_patch2/src/TauAnalysis/Skimming/test/selEvents_highNoPileUpMEt_fromBrian.txt'
+        ##'/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_3_3_patch2/src/TauAnalysis/Skimming/test/selEvents_pfCandCaloEnNan.txt'
+        '/afs/cern.ch/user/v/veelken/scratch0/CMSSW_5_3_3_patch2/src/TauAnalysis/Test/test/selEvents_simZprime2500toTauTau_recTauPtDivGenTauJetPtLt0_7.txt'
     ),
     separator = cms.string(':')
 )
@@ -97,7 +103,9 @@ process.skimOutputModule = cms.OutputModule("PoolOutputModule",
         #'/data1/veelken/CMSSW_5_2_x/skims/selEvents_bettysTauIdEff_WplusJets_madgraph_AOD.root'
         #'/data1/veelken/CMSSW_5_2_x/skims/selEvents_debugMEtSys_ZplusJets_madgraph_AOD.root'
         #'/data1/veelken/CMSSW_5_2_x/skims/selEvents_debugPATTaus_forSimon_AOD.root'
-        '/data1/veelken/CMSSW_5_2_x/skims/selEvents_debugPATTaus_forSimon_discrAgainstMuonsFailed_AOD.root'
+        #'/data1/veelken/CMSSW_5_3_x/skims/selEvents_highNoPileUpMEt_fromBrian_AOD.root'
+        #'/data1/veelken/CMSSW_5_3_x/skims/selEvents_pfCandCaloEnNan_AOD.root'
+        '/data1/veelken/CMSSW_5_3_x/skims/selEvents_simZprime2500toTauTau_recTauPtDivGenTauJetPtLt0_7_RECO.root'                                    
     )
 )
 
